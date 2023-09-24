@@ -23,6 +23,7 @@ exports.userSignUp = async (req, res) => {
                 email,
                 phone,
                 password: password,
+                isAdmin:req?.body?.isAdmin
             }).then(savedUser => {
                 return res.status(200).json({
                     success: true,
@@ -31,6 +32,7 @@ exports.userSignUp = async (req, res) => {
                         fullname: savedUser?.fullname,
                         email: savedUser?.email,
                         phone: savedUser?.phone,
+                        isAdmin: savedUser?.isAdmin
                     },
                 });
             })
@@ -77,6 +79,7 @@ exports.userLogin = async (req, res) => {
                 state: userFound?.state,
                 address: userFound?.address,
                 phone: userFound?.phone,
+                isAdmin: userFound?.isAdmin
             }
         })
     } else {
@@ -100,6 +103,7 @@ exports.updateUser = async (req, res) => {
                 state: req.body?.state,
                 address: req.body?.address,
                 phone: req.body?.phone,
+                isAdmin:req?.body?.isAdmin
             }
         }).then((updatedUser) => {
             return res.status(200).json({
@@ -111,6 +115,7 @@ exports.updateUser = async (req, res) => {
                     phone: req.body.phone,
                     state: req.body.state,
                     address: req.body.address,
+                    isAdmin:req?.body?.isAdmin
                 }
             })
         }).catch((error) => {
@@ -165,6 +170,7 @@ exports.userLoginWithOtp = async (req, res) => {
                 phone: userFound?.phone,
                 state: userFound?.state,
                 address: userFound?.address,
+                isAdmin:userFound?.isAdmin,
             }
 
         });

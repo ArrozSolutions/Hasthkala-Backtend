@@ -3,10 +3,14 @@ const crypto = require('crypto');
 
 exports.checkoutPayment = async(req,res)=>{
     try{
+        console.log(process.env.RAZORPAY_ID)
+        console.log(process.env.RAZORPAY_SECRET)
         const Instance = new Razorpay({
             key_id:process.env.RAZORPAY_ID,
             key_secret:process.env.RAZORPAY_SECRET,
         })
+
+        console.log(req.body);
 
         const options = {
             amount:req.body.amount*100,
@@ -40,7 +44,7 @@ exports.verifyPayment = async (req,res)=>{
             razorpay_order_id,
             razorpay_signature,
         } = req.body;
-        const sign = razorpay_payment_id;
+        const sign = razorpay_order_id + "|" +razorpay_payment_id;
         const expectSign = crypto
             .createHmac("sha256",'uQWsLENJXKZc2C6YiLSjzWB6')
             .update(sign.toString())

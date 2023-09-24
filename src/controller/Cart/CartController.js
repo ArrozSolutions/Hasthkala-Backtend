@@ -16,12 +16,12 @@ exports.addToCartCtrl = async (req, res) => {
             userid: uid,
             productid: pid,
             quantity: quantity,
-        }).then(async(cart) => {
-            await Product.updateMany({_id:pid},{
-                $set:{
+        }).then(async (cart) => {
+            await Product.updateMany({ _id: pid }, {
+                $set: {
                     quantity: initialquantity - quantity
                 }
-            }).then((updateProduct)=>{
+            }).then((updateProduct) => {
                 return res.status(200).json({
                     cart
                 })
@@ -45,14 +45,14 @@ exports.addToCartCtrl = async (req, res) => {
 exports.quantityEditCtrl = async (req, res) => {
     try {
         const { cid, quantity } = req.body;
-        const cartFound = await Cart.findOne({ _id:cid })
-        Cart.updateMany({_id:cid},{
-            $set:{
-                quantity:req?.body?.quantity
+        const cartFound = await Cart.findOne({ _id: cid })
+        Cart.updateMany({ _id: cid }, {
+            $set: {
+                quantity: req?.body?.quantity
             }
-        }).then((updated)=>{
+        }).then((updated) => {
             return res.status(200).json({
-                message:"Quantity Updated"
+                message: "Quantity Updated"
             })
         })
 
@@ -64,31 +64,31 @@ exports.quantityEditCtrl = async (req, res) => {
     }
 }
 
-exports.getSavedProducts = async(req,res)=>{
-    try{
-        const {uid} = req.body;
-        const savedProducts = await SaveForLater.find({uid:uid}).populate("pid");
+exports.getSavedProducts = async (req, res) => {
+    try {
+        const { uid } = req.body;
+        const savedProducts = await SaveForLater.find({ uid: uid }).populate("pid");
         return res.status(200).json({
-            status:"Success",
+            status: "Success",
             savedProducts
         })
     }
-    catch(error){
+    catch (error) {
         return res.status(500).json({
-            message:"Internal Server Error",
+            message: "Internal Server Error",
         })
     }
 }
 
-exports.saveForLater = async(req,res)=>{
+exports.saveForLater = async (req, res) => {
     try {
-        const { pid,uid } = req.body;
+        const { pid, uid } = req.body;
         SaveForLater.create({
             uid,
             pid
-        }).then((saved)=>{
+        }).then((saved) => {
             return res.status(200).json({
-                message:"Saved For Later",
+                message: "Saved For Later",
             })
         })
 
@@ -116,16 +116,16 @@ exports.getCartDataCtrl = async (req, res) => {
 
 exports.deleteCartItemCtrl = async (req, res) => {
     try {
-        const { cid,initialquantity } = req.body;
-        const cartFound = await Cart.findOne({_id:cid});
+        const { cid, initialquantity } = req.body;
+        const cartFound = await Cart.findOne({ _id: cid });
         const pid = cartFound?.productid;
         const qty = cartFound?.quantity;
-        await Cart.findByIdAndDelete(cid).then(async(success) => {
-            await Product.updateMany({_id:pid},{
-                $set:{
+        await Cart.findByIdAndDelete(cid).then(async (success) => {
+            await Product.updateMany({ _id: pid }, {
+                $set: {
                     quantity: initialquantity + qty
                 }
-            }).then((updatedProduct)=>{
+            }).then((updatedProduct) => {
                 return res.status(200).json({
                     message: "Cart Item Removed Successfully"
                 })
@@ -137,5 +137,24 @@ exports.deleteCartItemCtrl = async (req, res) => {
         })
     }
 }
+
+exports.deleteSavedItemCtrl = async (req, res) => {
+    try {
+        const { sid } = req.body;
+        console.log(sid)
+        await SaveForLater.findByIdAndDelete(sid).then((success) => {
+            return res.status(200).json({
+                message: "Saved Item Removed Successfully"
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error
+        })
+    }
+}
+
+
+
 
 

@@ -2,13 +2,14 @@ const mongoose = require("mongoose");
 
 const dbConnect = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    });
+    const option = {
+      socketTimeoutMS: 30000,
+      keepAlive: true,
+    };
+    await mongoose.connect(process.env.MONGO_URL, option);
     console.log("Db is Connected Successfully");
   } catch (error) {
-    console.dir(error,{depth:4});
+    console.dir(error, { depth: 4 });
   }
 };
 
