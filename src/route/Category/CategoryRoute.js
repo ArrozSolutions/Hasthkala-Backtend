@@ -15,33 +15,6 @@ const upload = multer({
     storage: multer.memoryStorage() // Limit the file size if needed
 });
 
-router.post('/create-category', upload.array('images'), (req, res) => {
-    console.log(req.body, req.files);
-    const files = req.files;
-
-    // Create an array to store the promises for each image upload
-    const uploadPromises = files.map(file => {
-        const params = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: `${shortid.generate()}_${file.originalname}`,
-            Body: file.buffer,
-            ACL: 'public-read' // Optional: Set the desired access control level
-        };
-
-        return s3.upload(params).promise();
-    });
-
-    // Execute all upload promises
-    Promise.all(uploadPromises)
-        .then(uploadedImages => {
-            const imageUrls = uploadedImages.map(uploadedImage => uploadedImage.Location);
-            createCategoryCtrl(req, res, imageUrls);
-        })
-        .catch(error => {
-            console.error('Error uploading images:', error);
-            res.status(500).json({ error: 'Internal Server Error' });
-        });
-});
 
 router.put('/update-category/:id',updateCategoryCtrl);
 router.get('/get-category',allCategoriesCtrl);

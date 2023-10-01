@@ -1,5 +1,6 @@
 const http = require("http");
 const app = require("./app");
+const passportSetup = require('./passport');
 
 const PORT = process.env.PORT || 5000;
 

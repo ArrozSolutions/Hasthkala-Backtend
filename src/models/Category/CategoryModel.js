@@ -12,7 +12,16 @@ const categorySchema = new mongoose.Schema({
     },
     images:{
         type:JSON,
+    }
+},
+{
+    toJSON: {
+        virtuals: true,
     },
+    toObject: {
+        virtuals: true,
+    },
+    timestamps: true,
 })
 
 const Category = mongoose.model("Category", categorySchema);

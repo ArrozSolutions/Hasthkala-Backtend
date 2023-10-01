@@ -14,6 +14,15 @@ const cartSchema = new mongoose.Schema({
         type:Number,
         required:true,
     }
+},
+{
+    toJSON: {
+        virtuals: true,
+    },
+    toObject: {
+        virtuals: true,
+    },
+    timestamps: true,
 })
 
 const Cart = mongoose.model("Cart", cartSchema);

@@ -45,6 +45,10 @@ const productSchema = new mongoose.Schema(
         additionalinfo:{
             type:String,
         },
+        discountprice:{
+            type:String,
+            required:true
+        },
         price:{
             type:Number,
             required:true,
@@ -61,13 +65,13 @@ const productSchema = new mongoose.Schema(
         images:{
             type:JSON,
         },
-        shipping:{
-            type:Boolean,
-        },
         trending:{
             type:Boolean,
             default:false,
-        }
+        },
+        tags:{
+            type:String,
+        },
     },
     {
         toJSON: {

@@ -1,131 +1,6 @@
 const { default: slugify } = require("slugify");
 const ProductModel = require("../../models/Product/ProductModel");
 
-exports.createProductCtrl = async (req, res, imageUrls) => {
-    try {
-        const {
-            name,
-            description,
-            price,
-            quantity,
-            category,
-            shipping,
-        } = req.body;
-        console.log(req.body, imageUrls);
-
-        let productImages = [];
-        if (imageUrls.length > 0) {
-            productImages = imageUrls.map(imageUrl => {
-                return { img: imageUrl }
-            });
-        }
-        console.log("Name = " + name);
-
-        ProductModel.create({
-            name,
-            slug: slugify(name),
-            description,
-            price,
-            shipping,
-            quantity,
-            category,
-            images: productImages,
-            color:req?.body?.color,
-            dimesnions:req?.body?.dimensions,
-            countryoforigin:req?.body?.countryoforigin,
-            material:req?.body?.material,
-            trending:req?.body?.trending,
-            additionalinfo:req?.body?.additionalinfo
-        }).then((product) => {
-            return res.status(200).json({
-                product
-            })
-        })
-            .catch(err => {
-                return res.status(500).json({
-                    success: false,
-                    message: err
-                });
-            });
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            message: "Internal server error"
-        });
-    }
-}
-
-
-exports.updateProductCtrl = async (req, res, imageUrls) => {
-    const {
-        pid,
-    } = req.body;
-
-    let productImages = [];
-    if (imageUrls) {
-        if (imageUrls.length > 0) {
-            productImages = imageUrls.map(imageUrl => {
-                return { img: imageUrl }
-            });
-        }
-    } else {
-        productImages = null
-    }
-
-
-    if (productImages) {
-        await ProductModel.updateMany({ _id: pid },
-            {
-                $set:
-                {
-                    name: req?.body?.name,
-                    slug: req?.body?.slug,
-                    description: req?.body?.description,
-                    price: req?.body?.price,
-                    quantity: req?.body?.quantity,
-                    category: req?.body?.category,
-                    countryoforigin: req?.body?.countryoforigin,
-                    color: req?.body?.color,
-                    additionalinfo: req?.body?.additionalinfo,
-                    dimensions: req?.body?.dimensions,
-                    trending: req?.body?.trending,
-                    images:productImages,
-                    material:req?.body?.material
-                }
-            }
-        ).then((updatedProduct) => {
-            return res.status(200).json({
-                message: "Product Updated"
-            })
-        })
-    } else {
-        await ProductModel.updateMany({ _id: pid },
-            {
-                $set:
-                {
-                    name: req?.body?.name,
-                    slug: req?.body?.slug,
-                    description: req?.body?.description,
-                    price: req?.body?.price,
-                    quantity: req?.body?.quantity,
-                    category: req?.body?.category,
-                    countryoforigin: req?.body?.countryoforigin,
-                    color: req?.body?.color,
-                    additionalinfo: req?.body?.additionalinfo,
-                    dimensions: req?.body?.dimensions,
-                    trending: req?.body?.trending,
-                    material:req?.body?.material
-                }
-            }
-        ).then((updatedProduct) => {
-            return res.status(200).json({
-                message: "Product Updated"
-            })
-        })
-    }
-}
-
 
 exports.getNewProductsCtrl = async (req, res) => {
     try {
@@ -160,9 +35,13 @@ exports.getProductCtrl = async (req, res) => {
     try {
         const perPage = 8;
         const page = req.params.page;
+        const allproducts =await ProductModel.find({});
+        const totalproducts = allproducts.length;
+        console.log(totalproducts);
         const products = await ProductModel.find({}).populate('category').limit(perPage * page)
         return res.status(200).json({
-            products
+            products,
+            totalproducts
         })
     } catch (error) {
         return res.status(500).json({

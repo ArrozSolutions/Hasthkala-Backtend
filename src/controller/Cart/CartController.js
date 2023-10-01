@@ -1,31 +1,52 @@
 const { default: slugify } = require("slugify");
 const Cart = require('../../models/Cart/CartModel');
+const User = require('../../models/User/UserModel');
 const Product = require("../../models/Product/ProductModel");
 const SaveForLater = require('../../models/SaveForLater/SaveForLaterModel');
 
 exports.addToCartCtrl = async (req, res) => {
     try {
-        const { pid, uid, quantity, initialquantity } = req.body;
-        const cartFound = await Cart.findOne({ userid: uid, productid: pid })
+        var usercreated = false;
+        var userId = null;
+        var uType = null;
+        const { pid, uid, quantity } = req.body;
+        console.log(uid);
+        if (uid == undefined || uid == null) {
+            await User.create({
+                usertype: "incomplete",
+            }).then((userCreated) => {
+                userId = userCreated?._id,
+                    uType = userCreated?.usertype,
+                    usercreated = true
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
+        const cartFound = await Cart.findOne({ userid: uid || userId, productid: pid })
         if (cartFound) {
             return res.status(400).json({
                 message: "Already Added",
             })
         }
         Cart.create({
-            userid: uid,
+            userid: (uid || userId),
             productid: pid,
             quantity: quantity,
         }).then(async (cart) => {
-            await Product.updateMany({ _id: pid }, {
-                $set: {
-                    quantity: initialquantity - quantity
-                }
-            }).then((updateProduct) => {
+            if (usercreated) {
                 return res.status(200).json({
-                    cart
+                    cart,
+                    user: {
+                        _id: userId,
+                        usertype: uType,
+                    },
+                    usercreated: usercreated
                 })
-            })
+            } else {
+                return res.status(200).json({
+                    cart,
+                })
+            }
         }).catch(err => {
             console.log(err)
             return res.status(500).json({
@@ -44,6 +65,7 @@ exports.addToCartCtrl = async (req, res) => {
 
 exports.quantityEditCtrl = async (req, res) => {
     try {
+
         const { cid, quantity } = req.body;
         const cartFound = await Cart.findOne({ _id: cid })
         Cart.updateMany({ _id: cid }, {
@@ -82,14 +104,50 @@ exports.getSavedProducts = async (req, res) => {
 
 exports.saveForLater = async (req, res) => {
     try {
+        var usercreated = false;
+        var userId = null;
+        var uType = null;
         const { pid, uid } = req.body;
+        if (uid == undefined) {
+            User.create({
+                usertype: "incomplete",
+            }).then((userCreated) => {
+                usercreated = true,
+                    uType = userCreated?.usertype,
+                    userId = userCreated?._id
+            }).catch((error) => {
+                console.log(error);
+            })
+
+        }
+        const savedProduct = await SaveForLater.findOne({ uid: uid, pid: pid });
+        if (savedProduct) {
+            return res.status(400).json({
+                message: "Already Saved",
+                alreadySaved: true,
+            })
+        }
         SaveForLater.create({
-            uid,
+            uid: (uid || userId),
             pid
         }).then((saved) => {
-            return res.status(200).json({
-                message: "Saved For Later",
-            })
+            if (usercreated) {
+                return res.status(200).json({
+                    message: "Saved For Later",
+                    usercreated: true,
+                    user: {
+                        _id: userId,
+                        usertype: uType,
+                    },
+                    sid: saved?._id,
+                })
+            } else {
+                return res.status(200).json({
+                    message: "Saved For Later",
+                    sid: saved?._id,
+                    usercreated: false,
+                })
+            }
         })
 
     } catch (error) {

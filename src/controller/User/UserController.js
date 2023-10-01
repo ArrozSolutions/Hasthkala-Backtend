@@ -4,7 +4,7 @@ const saltRounds = 11;
 const bcrypt = require("bcryptjs");
 const { ExternalCampaignListInstance } = require('twilio/lib/rest/messaging/v1/externalCampaign');
 const sendEmail = require('../../utils/SendMail');
-
+const sendOtp = require('../../utils/SendOtp');
 
 exports.userSignUp = async (req, res) => {
     try {
@@ -23,7 +23,7 @@ exports.userSignUp = async (req, res) => {
                 email,
                 phone,
                 password: password,
-                isAdmin:req?.body?.isAdmin
+                isAdmin: req?.body?.isAdmin
             }).then(savedUser => {
                 return res.status(200).json({
                     success: true,
@@ -103,7 +103,7 @@ exports.updateUser = async (req, res) => {
                 state: req.body?.state,
                 address: req.body?.address,
                 phone: req.body?.phone,
-                isAdmin:req?.body?.isAdmin
+                isAdmin: req?.body?.isAdmin
             }
         }).then((updatedUser) => {
             return res.status(200).json({
@@ -115,7 +115,7 @@ exports.updateUser = async (req, res) => {
                     phone: req.body.phone,
                     state: req.body.state,
                     address: req.body.address,
-                    isAdmin:req?.body?.isAdmin
+                    isAdmin: req?.body?.isAdmin
                 }
             })
         }).catch((error) => {
@@ -132,15 +132,21 @@ exports.updateUser = async (req, res) => {
 
 
 exports.getUserById = async (req, res) => {
-    const { id } = req.body;
+    const { uid } = req.body;
     try {
-        const userFound = await User.findOne({ id: id })
+        const userFound = await User.findOne({ _id: uid })
         if (userFound) {
             return res.status(200).json({
-                id: userFound?.id,
+                _id: userFound?._id,
                 email: userFound?.email,
                 fullname: userFound?.fullname,
                 phone: userFound?.phone,
+                city: userFound?.city,
+                state: userFound?.state,
+                country: userFound?.country,
+                zipcode: userFound?.zipcode,
+                address: userFound?.address,
+                usertype: userFound?.usertype,
             })
         } else {
             return res.status(400).json({
@@ -170,7 +176,7 @@ exports.userLoginWithOtp = async (req, res) => {
                 phone: userFound?.phone,
                 state: userFound?.state,
                 address: userFound?.address,
-                isAdmin:userFound?.isAdmin,
+                isAdmin: userFound?.isAdmin,
             }
 
         });
@@ -181,18 +187,20 @@ exports.userLoginWithOtp = async (req, res) => {
     }
 
 }
+
+
 exports.emailVerification = async (req, res) => {
     const { email, subject } = req.body;
     try {
         const userFound = await User.findOne({ email: email });
-        if(!userFound){
+        if (!userFound) {
             return res.status(402).json({
-                message:"User Does Not Exist"
+                message: "User Does Not Exist"
             })
         }
         let otp = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
         otp.toString();
-        await sendEmail(email,"Email Verification",`${otp}`).then((emailSent) => {
+        await sendEmail(email, "Email Verification", `${otp}`).then((emailSent) => {
             console.log("Email Sent");
             return res.status(200).json({
                 message: "Email sent",
@@ -219,50 +227,64 @@ exports.mobileNoVerificatiion = async (req, res) => {
     var newPhone = phone.split("+91")[1];
     console.log(newPhone);
     const userFound = await User.findOne({ phone: newPhone });
-    if(!userFound){
+    if (!userFound) {
         return res.status(402).json({
-            message:"User Does Not Exist!"
+            message: "User Does Not Exist!"
         })
     }
- 
+
     console.log(phone)
 
-    const accountSid = process.env.ACCOUNT_SID;
-    const authToken = process.env.AUTH_TOKEN;
-    const client = twilio(accountSid, authToken, process.env.VIRTUAL_NUMBER);
+    // const accountSid = process.env.ACCOUNT_SID;
+    // const authToken = process.env.AUTH_TOKEN;
+    // const client = twilio(accountSid, authToken, process.env.VIRTUAL_NUMBER);
 
     let otp = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
     otp.toString();
 
-    const message = `Your OTP is: ${otp}`;
-
-    if (process.env.PRODUCTION) {
-        client.messages
-            .create({
-                body: message,
-                from: process.env.VIRTUAL_NUMBER,
-                to: phone
-            })
-            .then((message) => {
-                res.status(200).json({
-                    otp: otp,
-                    message: "OTP send successfully"
-                })
-            }
-            )
-            .catch((error) => {
-                res.status(401).json({
-                    message: `Error sending OTP + ${error}`
-                })
-            });
-    }
-    else {
+    sendOtp(otp,phone).then((otpSent)=>{
         console.log(otp);
         return res.status(200).json({
-            otp: otp,
-            message: "OTP send successfully"
+            message:"OTP sent successfully!",
+            otp:otp,
         })
+    }).catch((err)=>{
+        console.log(err);
+        return res.status(400).json({
+            message:"OTP Failed!",
+        })  
+    })
 
-    }
+
+    // if (process.env.PRODUCTION) {
+    //     client.messages
+    //         .create({
+    //             body: message,
+    //             from: process.env.VIRTUAL_NUMBER,
+    //             to: phone
+    //         })
+    //         .then((message) => {
+    //             res.status(200).json({
+    //                 otp: otp,
+    //                 message: "OTP send successfully"
+    //             })
+    //         }
+    //         )
+    //         .catch((error) => {
+    //             res.status(401).json({
+    //                 message: `Error sending OTP + ${error}`
+    //             })
+    //         });
+    // }
+    // else {
+    //     console.log(otp);
+    //     return res.status(200).json({
+    //         otp: otp,
+    //         message: "OTP send successfully"
+    //     })
+
+    // }
 
 };
+
+

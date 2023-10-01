@@ -5,11 +5,9 @@ const userSchema = new mongoose.Schema(
     {
         fullname: {
             type: String,
-            required: true,
         },
         email: {
             type: String,
-            required: true,
         },        
         city: {
             type: String,
@@ -22,15 +20,28 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
         },
         phone: {
             type: Number,
-            required: true,
         },
         isAdmin:{
             type:Boolean,
-        }
+        },
+        googleid:{
+            type:String,
+        },
+        secret:{
+            type:String,
+        },
+        avatar:{
+            type:String,
+        },
+        usertype:{
+            type:String,
+        },
+        zipcode:{
+            type:String,
+        },
     },
     {
         toJSON: {
