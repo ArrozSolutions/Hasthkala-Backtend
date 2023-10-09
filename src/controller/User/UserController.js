@@ -39,7 +39,8 @@ exports.googleSignUp = async (req,res)=>{
                 email,
                 googleid,
                 fullname,
-                avatar
+                avatar,
+                usertype:"incomplete"
             }).then((savedUser)=>{
                 return res.status(200).json({
                     user:{
@@ -47,6 +48,7 @@ exports.googleSignUp = async (req,res)=>{
                         fullname:savedUser?.fullname,
                         email:savedUser?.email,
                         avatar:savedUser?.avatar,
+                        usertype:savedUser?.usertype,
                     },
                     success:true,
                     logintype:'google',
@@ -266,7 +268,6 @@ exports.adminEmailVerification = async (req, res) => {
         let otp = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
         otp.toString();
         await sendEmail(email, "Email Verification", `${otp}`).then((emailSent) => {
-            console.log("Email Sent");
             return res.status(200).json({
                 message: "Email sent",
                 emailSent: true,
@@ -299,7 +300,6 @@ exports.emailVerification = async (req, res) => {
         let otp = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
         otp.toString();
         await sendEmail(email, "Email Verification", `${otp}`).then((emailSent) => {
-            console.log("Email Sent");
             return res.status(200).json({
                 message: "Email sent",
                 emailSent: true,
@@ -322,7 +322,6 @@ exports.emailVerification = async (req, res) => {
 exports.adminMobileNoVerificatiion = async (req, res) => {
     const { phone } = req.body;
     var newPhone = phone.split("+91")[1];
-    console.log(newPhone);
     const userFound = await User.findOne({ phone: newPhone });
     if(!userFound?.isAdmin){
         return res.status(200).json({
@@ -335,7 +334,6 @@ exports.adminMobileNoVerificatiion = async (req, res) => {
         })
     }
 
-    console.log(phone)
 
     // const accountSid = process.env.ACCOUNT_SID;
     // const authToken = process.env.AUTH_TOKEN;
@@ -395,7 +393,6 @@ exports.adminMobileNoVerificatiion = async (req, res) => {
 exports.mobileNoVerificatiion = async (req, res) => {
     const { phone } = req.body;
     var newPhone = phone.split("+91")[1];
-    console.log(newPhone);
     const userFound = await User.findOne({ phone: newPhone });
     if (!userFound) {
         return res.status(402).json({
@@ -403,7 +400,6 @@ exports.mobileNoVerificatiion = async (req, res) => {
         })
     }
 
-    console.log(phone)
 
     // const accountSid = process.env.ACCOUNT_SID;
     // const authToken = process.env.AUTH_TOKEN;
@@ -413,7 +409,6 @@ exports.mobileNoVerificatiion = async (req, res) => {
     otp.toString();
 
     sendOtp(otp,phone).then((otpSent)=>{
-        console.log(otpSent);
         return res.status(200).json({
             message:"OTP sent successfully!",
             otp:otp,

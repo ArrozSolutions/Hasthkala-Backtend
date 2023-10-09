@@ -10,7 +10,6 @@ exports.addToCartCtrl = async (req, res) => {
         var userId = null;
         var uType = null;
         const { pid, uid, quantity } = req.body;
-        console.log(uid);
         if (uid == undefined || uid == null) {
             await User.create({
                 usertype: "incomplete",
@@ -199,7 +198,6 @@ exports.deleteCartItemCtrl = async (req, res) => {
 exports.deleteSavedItemCtrl = async (req, res) => {
     try {
         const { sid } = req.body;
-        console.log(sid)
         await SaveForLater.findByIdAndDelete(sid).then((success) => {
             return res.status(200).json({
                 message: "Saved Item Removed Successfully"

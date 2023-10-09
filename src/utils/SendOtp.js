@@ -22,7 +22,6 @@ module.exports = async (otp, mobile) => {
 
             res.on("end", function () {
                 const body = Buffer.concat(chunks);
-                console.log(body.toString());
             })
         })
 

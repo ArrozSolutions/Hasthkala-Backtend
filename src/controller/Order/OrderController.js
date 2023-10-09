@@ -13,7 +13,6 @@ exports.createOrderCtrl = async (req, res) => {
             usertype,
         } = req.body;
 
-        console.log(req.body,"req.body");
 
         if(usertype == "incomplete"){
             await User.updateMany({_id:uid},{
@@ -29,7 +28,6 @@ exports.createOrderCtrl = async (req, res) => {
                     usertype:'complete',
                 }
             }).then((updatedUser)=>{
-                console.log(updatedUser,24);
             }).catch((error)=>{
                 console.log(error,21);
             })

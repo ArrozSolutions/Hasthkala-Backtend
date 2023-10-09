@@ -11,8 +11,6 @@ function createCategories(categories,parentId = null){
         function filterChild(p){
             return p.parentid == parentId;
         }
-        console.log(category,"child");
-        console.log(parentId,"parent");
     }
 
     for(let cate of category){

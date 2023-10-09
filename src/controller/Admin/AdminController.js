@@ -4,6 +4,7 @@ const CategoryModel = require('../../models/Category/CategoryModel');
 const Order = require("../../models/Order/OrderModel");
 const User = require("../../models/User/UserModel");
 const Category = require("../../models/Category/CategoryModel");
+const sendEmail = require('../../utils/SendMail');
 
 exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
     try {
@@ -15,7 +16,6 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
             category,
             discountprice
         } = req.body;
-        console.log(req.body, imageUrls);
 
         let productImages = [];
         if (imageUrls) {
@@ -93,9 +93,6 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
         });
     }
 }
-
-
-
 
 exports.adminUpdateProductCtrl = async (req, res, imageUrls) => {
     const {
@@ -187,12 +184,35 @@ exports.adminDashboardCtrl = async (req, res) => {
     }
 }
 
-
 exports.adminRecentOrderCtrl = async (req, res) => {
     try {
         const orders = await Order.find({}).populate('uid').limit(10).sort({ createdAt: -1 })
+        const delivered = await Order.find({status:"Delivered"});
+        const pending = await Order.find({status:"Pending"});
+        const proccessing = await Order.find({status:"Proccessing"});
         return res.status(200).json({
             recentorders: orders,
+            delivered:delivered.length,
+            pending:pending.length,
+            proccessing:proccessing.length,
+        })
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: 'Internal Server Error' + error
+        })
+    }
+}
+
+exports.changeStatusCtrl = async (req, res) => {
+    try {
+        const { sid,status } = req.body;
+        await Order.findByIdAndUpdate(sid,{
+            status:status,
+        }).then((statusUpdated)=>{
+            return res.status(200).json({
+                message:"Status Updated to "+status,
+            })
         })
     }
     catch (error) {
@@ -204,11 +224,11 @@ exports.adminRecentOrderCtrl = async (req, res) => {
 
 exports.adminDeleteRecentOrderCtrl = async (req, res) => {
     try {
-        const {oid} = req.body;
-        await Order.findByIdAndDelete(oid).then((deletedOrder)=>{
+        const { oid } = req.body;
+        await Order.findByIdAndDelete(oid).then((deletedOrder) => {
             return res.status(200).json({
-                message:"Order Deleted Successfully",
-                success:true,
+                message: "Order Deleted Successfully",
+                success: true,
             })
         })
     }
@@ -221,11 +241,11 @@ exports.adminDeleteRecentOrderCtrl = async (req, res) => {
 
 exports.adminDeleteCustomerCtrl = async (req, res) => {
     try {
-        const {cid} = req.body;
-        await User.findByIdAndDelete(cid).then((deletedCustomer)=>{
+        const { cid } = req.body;
+        await User.findByIdAndDelete(cid).then((deletedCustomer) => {
             return res.status(200).json({
-                message:"Customer Deleted Successfully",
-                success:true,
+                message: "Customer Deleted Successfully",
+                success: true,
             })
         })
     }
@@ -238,11 +258,11 @@ exports.adminDeleteCustomerCtrl = async (req, res) => {
 
 exports.adminDeleteProductCtrl = async (req, res) => {
     try {
-        const {pid} = req.body;
-        await Product.findByIdAndDelete(pid).then((deletedProduct)=>{
+        const { pid } = req.body;
+        await Product.findByIdAndDelete(pid).then((deletedProduct) => {
             return res.status(200).json({
-                message:"Product Deleted Successfully",
-                success:true,
+                message: "Product Deleted Successfully",
+                success: true,
             })
         })
     }
@@ -255,11 +275,11 @@ exports.adminDeleteProductCtrl = async (req, res) => {
 
 exports.adminDeleteCategoryCtrl = async (req, res) => {
     try {
-        const {cid} = req.body;
-        await Category.findByIdAndDelete(cid).then((deletedCategory)=>{
+        const { cid } = req.body;
+        await Category.findByIdAndDelete(cid).then((deletedCategory) => {
             return res.status(200).json({
-                message:"Category Deleted Successfully",
-                success:true,
+                message: "Category Deleted Successfully",
+                success: true,
             })
         })
     }
@@ -304,10 +324,10 @@ exports.adminAllProductsCtrl = async (req, res) => {
     }
 }
 
-
 exports.adminAllCategoryCtrl = async (req, res) => {
     try {
-        const category = await Category.find({}).limit(10).sort({ createdAt: -1 })
+        const {skip} = req.body;
+        const category = await Category.find({}).limit(10).sort({ createdAt: -1 }).populate('parentid').skip(10 * skip)
         const allcategory = await Category.find({})
         const totalcategory = allcategory.length;
         return res.status(200).json({
@@ -336,11 +356,10 @@ exports.adminAllCategoryParentCtrl = async (req, res) => {
     }
 }
 
-
 exports.adminAllCustomersCtrl = async (req, res) => {
     try {
-        const {skip} = req.body;
-        const customers = await User.find({}).limit(10).skip(skip*10).sort({ createdAt: -1 })
+        const { skip } = req.body;
+        const customers = await User.find({}).limit(10).skip(skip * 10).sort({ createdAt: -1 })
         const allusers = await User.find({});
         const totalcustomers = allusers.length;
         return res.status(200).json({
@@ -355,6 +374,64 @@ exports.adminAllCustomersCtrl = async (req, res) => {
     }
 }
 
+exports.adminCreateHomeCategoryCtrl = async (req, res) => {
+    try {
+        const { cid } = req.body;
+        const category = await Category.findOne({ categoryid: cid });
+        if (category) {
+            return res.status(200).json({
+                message: "Category Allready Created",
+                error: true,
+                success: false,
+            })
+        } else {
+            Category.create({
+                categoryid: cid,
+            }).then((categoryCreated) => {
+                return res.status(200).json({
+                    message: "Category Created",
+                    categoryCreated,
+                })
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+exports.adminGetHomeCategoryCtrl = async (req, res) => {
+    try {
+        const category = await Category.find({});
+        return res.status(200).json({
+            message: "Category Find",
+            error: false,
+            success: true,
+            category
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+exports.adminDeleteHomeCategoryCtrl = async (req, res) => {
+    try {
+        const {cid}=req.body;
+        await Category.findByIdAndDelete(cid).then(()=>{
+            return res.status(200).json({
+                message:"Category Deleted",
+                success:true,
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
 
 exports.adminCreateCategoryCtrl = async (req, res, imageUrls) => {
 
@@ -378,7 +455,7 @@ exports.adminCreateCategoryCtrl = async (req, res, imageUrls) => {
                 name,
                 slug: slugify(name),
                 images: productImages,
-                parentid:req?.body?.parentid,
+                parentid: req?.body?.parentid,
             }).then((category) => {
                 return res.status(200).json({
                     category
@@ -392,4 +469,71 @@ exports.adminCreateCategoryCtrl = async (req, res, imageUrls) => {
     }
 }
 
+exports.adminUpdateCategoryCtrl = async (req, res, imageUrls) => {
+    const {
+        pid,
+    } = req.body;
 
+    let productImages = [];
+    if (imageUrls) {
+        if (imageUrls.length > 0) {
+            productImages = imageUrls.map(imageUrl => {
+                return { img: imageUrl }
+            });
+        }
+    } else {
+        productImages = null
+    }
+
+    if (productImages) {
+        await Category.updateMany({ _id: pid },
+            {
+                $set:
+                {
+                    name: req?.body?.name,
+                    slug: req?.body?.slug,
+                    images: productImages,
+                }
+            }
+        ).then((updatedCategory) => {
+            return res.status(200).json({
+                message: "Category Updated"
+            })
+        })
+    } else {
+        await Category.updateMany({ _id: pid },
+            {
+                $set:
+                {
+                    name: req?.body?.name,
+                    slug: req?.body?.slug,
+                }
+            }
+        ).then((updatedCategory) => {
+            return res.status(200).json({
+                message: "Category Updated"
+            })
+        })
+    }
+}
+
+exports.contactUsMailCtrl = async (req, res) => {
+    try {
+        const {name,email,phone,message}=req.body;
+        var msg = `Hasthkala Contact-Us:\nName: ${name}\nEmail: ${email}\nMobile Number: ${phone}\nMessage: ${message}`
+        await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`,msg).then((emailSent) => {
+            return res.status(200).json({
+                message: "Message sent",
+                emailSent: true,
+            })
+        }).catch((error) => {
+            return res.status(400).json({
+                message: error
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal Server Error"+error
+        })
+    }
+}

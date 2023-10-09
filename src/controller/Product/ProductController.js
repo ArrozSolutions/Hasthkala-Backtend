@@ -37,7 +37,6 @@ exports.getProductCtrl = async (req, res) => {
         const page = req.params.page;
         const allproducts =await ProductModel.find({});
         const totalproducts = allproducts.length;
-        console.log(totalproducts);
         const products = await ProductModel.find({}).populate('category').limit(perPage * page)
         return res.status(200).json({
             products,
@@ -100,7 +99,6 @@ exports.searchProductCtrl = async (req, res) => {
     try {
         const perPage = 8;
         const { keyword, page } = req.params;
-        console.log(keyword);
         const result = await ProductModel.find({
             $or: [
                 { name: { $regex: keyword, $options: "i" } },

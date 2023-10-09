@@ -58,6 +58,18 @@ const productSchema = new mongoose.Schema(
             ref:'Category',
             required:true,
         },
+        category2:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Category',
+        },
+        category3:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Category',
+        },
+        category4:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Category',
+        },
         quantity:{
             type:Number,
             required:true,

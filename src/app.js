@@ -19,6 +19,7 @@ const cartRoutes = require('./route/Cart/CartRoute');
 const orderRoutes = require('./route/Order/OrderRoute');
 const paymentRoutes = require('./route/Payment/PaymentRoutes');
 const adminRoutes = require('./route/Admin/AdminRoutes');
+const couponRoutes = require('./route/Coupon/CouponRoute');
 
 //dotenv
 dotenv.config();
@@ -46,8 +47,7 @@ app.use(passport.session());
 //cors
 app.use(
 	cors({
-		// origin: "http://localhost:3000/",
-		origin: "https://hhkgifts.com/",
+		origin: 'http://localhost:3000',
 		methods: "GET,POST,PUT,DELETE",
 		credentials: true,
 	})
@@ -63,6 +63,7 @@ app.use("/api", cartRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", paymentRoutes);
 app.use("/api", adminRoutes);
+app.use("/api",couponRoutes);
 app.use("/auth",authRoutes);
 
 module.exports = app;
