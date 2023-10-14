@@ -141,7 +141,8 @@ exports.userLogin = async (req, res) => {
                 state: userFound?.state,
                 address: userFound?.address,
                 phone: userFound?.phone,
-                isAdmin: userFound?.isAdmin
+                isAdmin: userFound?.isAdmin,
+                avatar:userFound?.avatar,
             }
         })
     } else {
@@ -227,7 +228,6 @@ exports.getUserById = async (req, res) => {
 
 exports.userLoginWithOtp = async (req, res) => {
     const { phone } = req.body;
-    console.log("mno" + phone);
     const userFound = await User.findOne({ phone: phone });
     if (userFound) {
         return res.status(200).json({
@@ -237,6 +237,7 @@ exports.userLoginWithOtp = async (req, res) => {
                 email: userFound?.email,
                 city: userFound?.city,
                 phone: userFound?.phone,
+                avatar:userFound?.avatar,
                 state: userFound?.state,
                 address: userFound?.address,
                 isAdmin: userFound?.isAdmin,

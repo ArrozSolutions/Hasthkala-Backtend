@@ -6,6 +6,8 @@ const User = require("../../models/User/UserModel");
 const Category = require("../../models/Category/CategoryModel");
 const sendEmail = require('../../utils/SendMail');
 
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
     try {
         const {
@@ -14,8 +16,26 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
             price,
             quantity,
             category,
-            discountprice
+            discountprice,
         } = req.body;
+
+        let vars =[];
+        let v = req?.body?.variants;
+        if(v){
+            v = JSON.parse(req?.body?.variants);
+            if(v.length > 0){
+                vars = v?.map(variant => {
+                    return {
+                        name:variant?.name,
+                        attribute:variant?.attribute,
+                        price:variant?.price,
+                        discountprice:variant?.discountprice,
+                        quantity:variant?.quantity,
+                    }
+                })
+            }
+        }
+        
 
         let productImages = [];
         if (imageUrls) {
@@ -37,6 +57,8 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
                 price,
                 quantity,
                 category,
+                parentcategory:req?.body?.parentcategory,
+                childcategory:req?.body?.childcategory,
                 images: productImages,
                 color: req?.body?.color,
                 dimesnions: req?.body?.dimensions,
@@ -46,6 +68,11 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
                 additionalinfo: req?.body?.additionalinfo,
                 discountprice,
                 tags: req?.body?.tags,
+                variants: vars,
+                haveVariants: req?.body?.haveVariants,
+                havePersonalization:req?.body?.havePersonalization,
+                personalizationType:req?.body?.personalizationType,
+                summary:req?.body?.summary,
             }).then((product) => {
                 return res.status(200).json({
                     product
@@ -65,6 +92,9 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
                 price,
                 quantity,
                 category,
+                summary:req?.body?.summary,
+                parentcategory:req?.body?.parentcategory,
+                childcategory:req?.body?.childcategory,
                 color: req?.body?.color,
                 dimesnions: req?.body?.dimensions,
                 countryoforigin: req?.body?.countryoforigin,
@@ -172,9 +202,41 @@ exports.adminUpdateProductCtrl = async (req, res, imageUrls) => {
 
 exports.adminDashboardCtrl = async (req, res) => {
     try {
+        const currentDate = new Date().getDate();
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        const orderPrices = await Order.find({}).select('totalprice').select('createdAt');
+
+        var totalsale = 0;
+        var todaysale = 0;
+        var yesterdaysale = 0;
+        var thismonthsale = 0;
+        for (let i = 0; i < orderPrices.length; i++) {
+            totalsale = totalsale + parseFloat(orderPrices[i]?.totalprice);
+            var order = orderPrices[i]?.createdAt?.toString();
+            const orderDate = order?.split(' ')[2];
+            const orderMonth = months.findIndex(checkOrderMonth);
+            function checkOrderMonth(m) {
+                return m == order?.split(' ')[1]
+            }
+            const orderYear = order?.split(' ')[3];
+
+            //Check Todays Order
+            if ((currentDate == orderDate) && (currentMonth == orderMonth) && (currentYear == orderYear)){
+                todaysale = todaysale + parseFloat(orderPrices[i]?.totalprice);
+            }
+            else if((currentDate-1 == orderDate) && (currentMonth-1 == orderMonth) && (currentYear-1 == orderYear)){
+                yesterdaysale = yesterdaysale + parseFloat(orderPrices[i]?.totalprice);
+            }else if((currentMonth == orderMonth) && (currentYear == orderYear)){
+                thismonthsale = thismonthsale + parseFloat(orderPrices[i]?.totalprice);
+            }
+        }
         return res.status(200).json({
-            day,
-            orders
+            totalsale,
+            todaysale,
+            yesterdaysale,
+            thismonthsale,
         })
     }
     catch (error) {
@@ -187,14 +249,14 @@ exports.adminDashboardCtrl = async (req, res) => {
 exports.adminRecentOrderCtrl = async (req, res) => {
     try {
         const orders = await Order.find({}).populate('uid').limit(10).sort({ createdAt: -1 })
-        const delivered = await Order.find({status:"Delivered"});
-        const pending = await Order.find({status:"Pending"});
-        const proccessing = await Order.find({status:"Proccessing"});
+        const delivered = await Order.find({ status: "Delivered" });
+        const pending = await Order.find({ status: "Pending" });
+        const proccessing = await Order.find({ status: "Proccessing" });
         return res.status(200).json({
             recentorders: orders,
-            delivered:delivered.length,
-            pending:pending.length,
-            proccessing:proccessing.length,
+            delivered: delivered.length,
+            pending: pending.length,
+            proccessing: proccessing.length,
         })
     }
     catch (error) {
@@ -206,12 +268,12 @@ exports.adminRecentOrderCtrl = async (req, res) => {
 
 exports.changeStatusCtrl = async (req, res) => {
     try {
-        const { sid,status } = req.body;
-        await Order.findByIdAndUpdate(sid,{
-            status:status,
-        }).then((statusUpdated)=>{
+        const { sid, status } = req.body;
+        await Order.findByIdAndUpdate(sid, {
+            status: status,
+        }).then((statusUpdated) => {
             return res.status(200).json({
-                message:"Status Updated to "+status,
+                message: "Status Updated to " + status,
             })
         })
     }
@@ -326,7 +388,7 @@ exports.adminAllProductsCtrl = async (req, res) => {
 
 exports.adminAllCategoryCtrl = async (req, res) => {
     try {
-        const {skip} = req.body;
+        const { skip } = req.body;
         const category = await Category.find({}).limit(10).sort({ createdAt: -1 }).populate('parentid').skip(10 * skip)
         const allcategory = await Category.find({})
         const totalcategory = allcategory.length;
@@ -419,11 +481,11 @@ exports.adminGetHomeCategoryCtrl = async (req, res) => {
 
 exports.adminDeleteHomeCategoryCtrl = async (req, res) => {
     try {
-        const {cid}=req.body;
-        await Category.findByIdAndDelete(cid).then(()=>{
+        const { cid } = req.body;
+        await Category.findByIdAndDelete(cid).then(() => {
             return res.status(200).json({
-                message:"Category Deleted",
-                success:true,
+                message: "Category Deleted",
+                success: true,
             })
         })
     } catch (error) {
@@ -519,9 +581,9 @@ exports.adminUpdateCategoryCtrl = async (req, res, imageUrls) => {
 
 exports.contactUsMailCtrl = async (req, res) => {
     try {
-        const {name,email,phone,message}=req.body;
+        const { name, email, phone, message } = req.body;
         var msg = `Hasthkala Contact-Us:\nName: ${name}\nEmail: ${email}\nMobile Number: ${phone}\nMessage: ${message}`
-        await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`,msg).then((emailSent) => {
+        await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`, msg).then((emailSent) => {
             return res.status(200).json({
                 message: "Message sent",
                 emailSent: true,
@@ -533,7 +595,62 @@ exports.contactUsMailCtrl = async (req, res) => {
         })
     } catch (error) {
         return res.status(500).json({
-            message: "Internal Server Error"+error
+            message: "Internal Server Error" + error
+        })
+    }
+}
+
+exports.updateAdminCtrl = async(req,res)=>{
+    try{
+        const {uid} = req.body;
+        console.log(uid,'uid'),
+        await User.updateMany({_id:uid},{
+            $set:{
+                email:req?.body?.email,
+                phone:req?.body?.phone,
+                password:req?.body?.password,
+                fullname:req?.body?.fullname,
+            }
+        }).then((adminUpdated)=>{
+            return res.status(200).json({
+                message:"Admin Updated",
+                adminUpdated,
+                user:{
+                    _id:uid,
+                    email:req?.body?.email,
+                    phone:req?.body?.phone,
+                    password:req?.body?.password,
+                    fullname:req?.body?.fullname,
+                },
+            })
+        })
+    }
+    catch(error){
+        return res.status(500).json({
+            message:"Internal Server Error "+error,
+        })
+    }
+}
+
+exports.updateAdminAvatarCtrl = async(req,res,imageUrls)=>{
+    try{
+        const uid = req?.body?.uid;
+        if(imageUrls){
+            const avatar = imageUrls[0];
+            await User.updateMany({_id:uid},{
+                $set:{
+                    avatar,
+                }
+            }).then((avatarUpdated)=>{
+                return res.status(200).json({
+                    avatar,
+                })
+            })
+        }
+    }
+    catch(error){
+        return res.status(500).json({
+            message:"Internal Server Error "+error,
         })
     }
 }

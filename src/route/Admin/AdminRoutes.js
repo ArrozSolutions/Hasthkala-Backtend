@@ -1,10 +1,10 @@
 const express = require("express");
-const { adminCreateProductCtrl, adminCreateCategoryCtrl,adminAllCategoryParentCtrl, adminUpdateProductCtrl, adminRecentOrderCtrl, adminAllCustomersCtrl, adminAllOrdersCtrl, adminAllProductsCtrl, adminAllCategoryCtrl, adminDeleteRecentOrderCtrl, adminDashboardCtrl, adminDeleteCustomerCtrl, adminDeleteProductCtrl, adminDeleteCategoryCtrl, adminUpdateCategoryCtrl, adminCreateHomeCategoryCtrl, adminDeleteHomeCategoryCtrl, adminGetHomeCategoryCtrl, contactUsMailCtrl, changeStatusCtrl } = require("../../controller/Admin/AdminController");
+const { adminCreateProductCtrl, adminCreateCategoryCtrl,adminAllCategoryParentCtrl, adminUpdateProductCtrl, adminRecentOrderCtrl, adminAllCustomersCtrl, adminAllOrdersCtrl, adminAllProductsCtrl, adminAllCategoryCtrl, adminDeleteRecentOrderCtrl, adminDashboardCtrl, adminDeleteCustomerCtrl, adminDeleteProductCtrl, adminDeleteCategoryCtrl, adminUpdateCategoryCtrl, adminCreateHomeCategoryCtrl, adminDeleteHomeCategoryCtrl, adminGetHomeCategoryCtrl, contactUsMailCtrl, changeStatusCtrl, updateAdminCtrl, updateAdminAvatarCtrl } = require("../../controller/Admin/AdminController");
 const router = express.Router();
+const { adminMobileNoVerificatiion, adminEmailVerification } = require("../../controller/User/UserController");
 const multer = require('multer');
 const shortid = require('shortid');
 const AWS = require('aws-sdk');
-const { adminMobileNoVerificatiion, adminEmailVerification } = require("../../controller/User/UserController");
 require('dotenv').config();
 
 const s3 = new AWS.S3({
@@ -180,5 +180,39 @@ router.get('/admin-get-home-categories',adminGetHomeCategoryCtrl);
 
 router.post('/contact-us-mail',contactUsMailCtrl);
 router.post('/change-status',changeStatusCtrl);
+
+router.post('/update-admin',updateAdminCtrl);
+router.post('/update-admin-avatar', upload.array('images'), (req, res) => {
+    const files = req?.files;
+    console.log(files,'files');
+    if (files) {
+        // Create an array to store the promises for each image upload
+        const uploadPromises = files.map(file => {
+            const params = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: `${shortid.generate()}_${file.originalname}`,
+                Body: file.buffer,
+                ACL: 'public-read' // Optional: Set the desired access control level
+            };
+            return s3.upload(params).promise();
+        });
+        // Execute all upload promises
+        Promise.all(uploadPromises)
+            .then(uploadedImages => {
+                // Create an array of the uploaded image URLs
+                const imageUrls = uploadedImages.map(uploadedImage => uploadedImage.Location);
+
+                // Call the createProduct function with the imageUrls
+                updateAdminAvatarCtrl(req, res, imageUrls);
+            })
+            .catch(error => {
+                console.error('Error uploading images:', error);
+                res.status(500).json({ error: 'Internal Server Error' });
+            });
+    }else{
+        updateAdminAvatarCtrl(req,res,null);
+    }
+});
+
 
 module.exports = router; 

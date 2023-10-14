@@ -102,56 +102,70 @@ exports.getSavedProducts = async (req, res) => {
 }
 
 exports.saveForLater = async (req, res) => {
+    var usercreated = false;
     try {
-        var usercreated = false;
-        var userId = null;
-        var uType = null;
         const { pid, uid } = req.body;
-        if (uid == undefined) {
+        console.log(uid, 'uid');
+        if (uid == null || uid == undefined) {
             User.create({
                 usertype: "incomplete",
             }).then((userCreated) => {
-                usercreated = true,
-                    uType = userCreated?.usertype,
-                    userId = userCreated?._id
+                usercreated = true;
+                SaveForLater.create({
+                    uid: userCreated?._id,
+                    pid
+                }).then((saved) => {
+                    return res.status(200).json({
+                        message: "Saved For Later",
+                        usercreated: true,
+                        user: {
+                            _id: userCreated?._id,
+                            usertype: userCreated?.usertype,
+                        },
+                        sid: saved?._id,
+                    })
+                }).catch((err) => {
+                    return res.status(400).json({
+                        message: "Error :- " + err
+                    })
+                })
             }).catch((error) => {
                 console.log(error);
             })
+        }
 
-        }
-        const savedProduct = await SaveForLater.findOne({ uid: uid, pid: pid });
-        if (savedProduct) {
-            return res.status(400).json({
-                message: "Already Saved",
-                alreadySaved: true,
-            })
-        }
-        SaveForLater.create({
-            uid: (uid || userId),
-            pid
-        }).then((saved) => {
-            if (usercreated) {
-                return res.status(200).json({
-                    message: "Saved For Later",
-                    usercreated: true,
-                    user: {
-                        _id: userId,
-                        usertype: uType,
-                    },
-                    sid: saved?._id,
+        if (uid) {
+
+            const savedProduct = await SaveForLater.findOne(
+                {
+                    $and: [
+                        { uid },
+                        { pid }
+                    ]
+                }
+            );
+            if (savedProduct) {
+                return res.status(400).json({
+                    message: "Already Saved",
+                    alreadySaved: true,
+                    savedProduct,
                 })
-            } else {
+            }
+            SaveForLater.create({
+                uid,
+                pid
+            }).then((saved) => {
                 return res.status(200).json({
                     message: "Saved For Later",
                     sid: saved?._id,
                     usercreated: false,
                 })
-            }
-        })
+            })
 
+        }
     } catch (error) {
         return res.status(500).json({
-            message: error
+            message: "Internal Server Error "+error
         })
     }
 }

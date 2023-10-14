@@ -30,6 +30,9 @@ const productSchema = new mongoose.Schema(
             type:String,
             required:true,
         },
+        summary:{
+            type:String,
+        },
         dimensions:{
             type:String,
         },
@@ -53,22 +56,19 @@ const productSchema = new mongoose.Schema(
             type:Number,
             required:true,
         },
-        category:{
+        parentcategory:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Category',
             required:true,
         },
-        category2:{
+        childcategory:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Category',
         },
-        category3:{
+        category:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Category',
-        },
-        category4:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'Category',
+            required:true,
         },
         quantity:{
             type:Number,
@@ -84,6 +84,35 @@ const productSchema = new mongoose.Schema(
         tags:{
             type:String,
         },
+        haveVariants:{
+            type:Boolean,
+            default:false,
+        },
+        havePersonalization:{
+            type:Boolean,
+        },
+        personalizationType:{
+            type:String,
+        },
+        variants:[
+            {
+                attribute:{
+                    type:String,
+                },
+                price:{
+                    type:String,
+                },
+                discountprice:{
+                    type:String,
+                },
+                quantity:{
+                    type:String,
+                },
+                name:{
+                    type:String,
+                },
+            }
+        ]
     },
     {
         toJSON: {

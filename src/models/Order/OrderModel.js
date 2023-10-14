@@ -21,7 +21,19 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-    }
+    },
+    customtext: {
+        type: String,
+    },
+    customlink: {
+        type: String,
+    },
+    customimg: {
+        type: JSON,
+    },
+    personalization:{
+        type:Boolean,
+    },
 },
     {
         toJSON: {

@@ -21,7 +21,7 @@ const upload = multer({
 
 
 // GET PRODUCTS ROUTE 
-router.get('/get-products/:page', getProductCtrl);
+router.get('/get-products/:page/:sort', getProductCtrl);
 
 // GET NEWLY ADDED PRODUCTS
 router.get('/new-products', getNewProductsCtrl);

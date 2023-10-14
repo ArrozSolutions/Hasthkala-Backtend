@@ -20,6 +20,11 @@ const orderRoutes = require('./route/Order/OrderRoute');
 const paymentRoutes = require('./route/Payment/PaymentRoutes');
 const adminRoutes = require('./route/Admin/AdminRoutes');
 const couponRoutes = require('./route/Coupon/CouponRoute');
+const attributeRoutes = require('./route/Atributes/AttributeRoute');
+const giftBoxRoutes = require('./route/GiftBox/GiftBoxRoute')
+const giftCardRoutes = require('./route/GiftCards/GiftCardRoute');
+const notificationRoutes = require('./route/Notifications/Notifications');
+const homecategoryRoutes = require('./route/HomeCategory/HomeCategory');
 
 //dotenv
 dotenv.config();
@@ -27,8 +32,6 @@ const app = express();
 
 // dbConnect
 dbConnect();
-
-
 
 app.use(express.json());
 
@@ -47,7 +50,7 @@ app.use(passport.session());
 //cors
 app.use(
 	cors({
-		origin: 'http://localhost:3000',
+		origin: '*',
 		methods: "GET,POST,PUT,DELETE",
 		credentials: true,
 	})
@@ -63,7 +66,12 @@ app.use("/api", cartRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", paymentRoutes);
 app.use("/api", adminRoutes);
+app.use("/api", attributeRoutes);
 app.use("/api",couponRoutes);
+app.use("/api",giftBoxRoutes);
+app.use("/api",giftCardRoutes);
+app.use("/api",homecategoryRoutes);
+app.use("/api",notificationRoutes);
 app.use("/auth",authRoutes);
 
 module.exports = app;

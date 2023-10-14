@@ -44,7 +44,6 @@ exports.allCategoriesCtrl = async (req, res) => {
     try {
         const category = await CategoryModel.find({});
         if (category){
-            console.log(category,'category')
             const categoryList = await createCategories(category);
 
             return res.status(200).json({
