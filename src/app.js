@@ -50,7 +50,8 @@ app.use(passport.session());
 //cors
 app.use(
 	cors({
-		origin: ['https://admin.hhkgifts.com','https://hhkgifts.com'],
+		// origin: ['https://admin.hhkgifts.com','https://hhkgifts.com'],
+        origin:'http://localhost:3000',
 		methods: "GET,POST,PUT,DELETE",
 		credentials: true,
 	})

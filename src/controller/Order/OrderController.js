@@ -1,4 +1,5 @@
 const Cart = require("../../models/Cart/CartModel");
+const Notifications = require("../../models/Notifications/Notifications");
 const Order = require("../../models/Order/OrderModel");
 const User = require("../../models/User/UserModel");
 
@@ -33,21 +34,27 @@ exports.createOrderCtrl = async (req, res) => {
                     paymentmode,
                     totalprice
                 }).then(async (order) => {
-                    return res.status(200).json({
-                        message: "Order Created Successfully",
-                        userUpdated: false,
-                        userCreated: true,
-                        user: {
-                            _id: userCreated?._id,
-                            fullname: userCreated?.fullname,
-                            state: userCreated?.state,
-                            city: userCreated?.city,
-                            address: userCreated?.address,
-                            country: userCreated?.country,
-                            email: userCreated?.email,
-                            phone: userCreated?.phone,
-                            usertype: userCreated?.usertype,
-                        }
+                    Notifications.create({
+                        uid: userCreated?._id,
+                        orderdata: cartdata,
+                        message: "Your Order has been Created!"
+                    }).then((notificationCreated) => {
+                        return res.status(200).json({
+                            message: "Order Created Successfully",
+                            userUpdated: false,
+                            userCreated: true,
+                            user: {
+                                _id: userCreated?._id,
+                                fullname: userCreated?.fullname,
+                                state: userCreated?.state,
+                                city: userCreated?.city,
+                                address: userCreated?.address,
+                                country: userCreated?.country,
+                                email: userCreated?.email,
+                                phone: userCreated?.phone,
+                                usertype: userCreated?.usertype,
+                            }
+                        })
                     })
                 })
                     .catch(err => {
@@ -87,17 +94,23 @@ exports.createOrderCtrl = async (req, res) => {
                 status,
                 paymentmode,
                 totalprice
-            }).then(async(order) => {
-                if (userUpdated) {
-                    return res.status(200).json({
-                        message: "Order Created Successfully",
-                        userUpdated: true,
-                    })
-                } else {
-                    return res.status(200).json({
-                        message: "Order Created Successfully",
-                    })
-                }
+            }).then(async (order) => {
+                Notifications.create({
+                    uid,
+                    orderdata: cartdata,
+                    message: "Your Order has been created!",
+                }).then((notificationCreated) => {
+                    if (userUpdated) {
+                        return res.status(200).json({
+                            message: "Order Created Successfully",
+                            userUpdated: true,
+                        })
+                    } else {
+                        return res.status(200).json({
+                            message: "Order Created Successfully",
+                        })
+                    }
+                })
             })
                 .catch(err => {
                     return res.status(500).json({

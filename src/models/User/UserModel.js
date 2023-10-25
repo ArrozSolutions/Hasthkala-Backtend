@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema(
         zipcode:{
             type:String,
         },
+        country:{
+            type:String,
+        },
     },
     {
         toJSON: {
