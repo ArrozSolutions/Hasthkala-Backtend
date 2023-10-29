@@ -2,6 +2,7 @@ const Cart = require("../../models/Cart/CartModel");
 const Notifications = require("../../models/Notifications/Notifications");
 const Order = require("../../models/Order/OrderModel");
 const User = require("../../models/User/UserModel");
+const sendEmail = require('../../utils/SendMail');
 
 exports.createOrderCtrl = async (req, res) => {
     try {
@@ -38,7 +39,10 @@ exports.createOrderCtrl = async (req, res) => {
                         uid: userCreated?._id,
                         orderdata: cartdata,
                         message: "Your Order has been Created!"
-                    }).then((notificationCreated) => {
+                    }).then(async(notificationCreated) => {
+                        await sendEmail(req.body.email, "Order Successfully Placed!", `${cartdata}`).then((emailSent) => {
+                            console.log("EMail sent");
+                        })
                         return res.status(200).json({
                             message: "Order Created Successfully",
                             userUpdated: false,
@@ -99,7 +103,10 @@ exports.createOrderCtrl = async (req, res) => {
                     uid,
                     orderdata: cartdata,
                     message: "Your Order has been created!",
-                }).then((notificationCreated) => {
+                }).then(async(notificationCreated) => {
+                    await sendEmail(req.body.email, "Order Successfully Placed!", `${cartdata}`).then((emailSent) => {
+                        console.log("EMail sent");
+                    })
                     if (userUpdated) {
                         return res.status(200).json({
                             message: "Order Created Successfully",
@@ -177,22 +184,30 @@ exports.createPersonalizedOrderCtrl = async (req, res, imageUrls, cartdata, uid)
                     customlink: req?.body?.customLink,
                     customimg: customImages,
                 }).then((order) => {
-                    return res.status(200).json({
-                        message: "Order Created Successfully1",
-                        userCreated: true,
-                        user: {
-                            _id: userCreated?._id,
-                            fullname: userCreated?.fullname,
-                            state: userCreated?.state,
-                            city: userCreated?.city,
-                            address: userCreated?.address,
-                            country: userCreated?.country,
-                            email: userCreated?.email,
-                            phone: userCreated?.phone,
-                            usertype: userCreated?.usertype,
-                        }
+                    Notifications.create({
+                        uid: userCreated?._id,
+                        orderdata: cartdata,
+                        message: "Your order has been created!",
+                    }).then(async(notificationCreated) => {
+                        await sendEmail(req.body.email, "Order Successfully Placed!", `${cartdata}`).then((emailSent) => {
+                            console.log("EMail sent");
+                        })
+                        return res.status(200).json({
+                            message: "Order Created Successfully1",
+                            userCreated: true,
+                            user: {
+                                _id: userCreated?._id,
+                                fullname: userCreated?.fullname,
+                                state: userCreated?.state,
+                                city: userCreated?.city,
+                                address: userCreated?.address,
+                                country: userCreated?.country,
+                                email: userCreated?.email,
+                                phone: userCreated?.phone,
+                                usertype: userCreated?.usertype,
+                            }
+                        })
                     })
-
                 })
                     .catch(err => {
                         return res.status(500).json({
@@ -237,17 +252,26 @@ exports.createPersonalizedOrderCtrl = async (req, res, imageUrls, cartdata, uid)
                 customlink: req?.body?.customLink,
                 customimg: customImages,
             }).then((order) => {
-                if (userUpdated) {
-                    return res.status(200).json({
-                        message: "Order Created Successfully3",
-                        userUpdated: true,
-                        userCreated: false,
+                Notifications.create({
+                    uid: uid,
+                    orderdata: cartdata,
+                    message: "Your Order Has Been Created!",
+                }).then(async(notificationCreated) => {
+                    await sendEmail(req.body.email, "Order Successfully Placed!", `${cartdata}`).then((emailSent) => {
+                        console.log("EMail sent");
                     })
-                } else {
-                    return res.status(200).json({
-                        message: "Order Created Successfully4",
-                    })
-                }
+                    if (userUpdated) {
+                        return res.status(200).json({
+                            message: "Order Created Successfully3",
+                            userUpdated: true,
+                            userCreated: false,
+                        })
+                    } else {
+                        return res.status(200).json({
+                            message: "Order Created Successfully4",
+                        })
+                    }
+                })
             })
                 .catch(err => {
                     return res.status(500).json({
