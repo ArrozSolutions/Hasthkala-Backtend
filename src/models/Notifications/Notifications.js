@@ -9,8 +9,14 @@ const notificationsSchema = new mongoose.Schema({
     message:{
         type:String,
     },
-    orderdata:{
-        type:JSON,
+    orderName:{
+        type:String,
+    },
+    orderPrice:{
+        type:String,
+    },
+    orderId:{
+        type:String,
     },
 },
     {

@@ -289,7 +289,7 @@ exports.adminEmailVerification = async (req, res) => {
         }
         let otp = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
         otp.toString();
-        await sendEmail(email, "Email Verification", `${otp}`).then((emailSent) => {
+        await sendEmail(email, `Your verification code is ${otp}`, `Email Confirmation from Harsh Hasthkala\n\n`).then((emailSent) => {
             return res.status(200).json({
                 message: "Email sent",
                 emailSent: true,
@@ -321,7 +321,7 @@ exports.emailVerification = async (req, res) => {
         }
         let otp = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
         otp.toString();
-        await sendEmail(email, "Email Verification", `${otp}`).then((emailSent) => {
+        await sendEmail(email, `Your verification code is ${otp}`, `Email Confirmation from Harsh Hasthkala\n\n`).then((emailSent) => {
             return res.status(200).json({
                 message: "Email sent",
                 emailSent: true,
@@ -408,9 +408,6 @@ exports.adminMobileNoVerificatiion = async (req, res) => {
     // }
 
 };
-
-
-
 
 exports.mobileNoVerificatiion = async (req, res) => {
     const { phone } = req.body;

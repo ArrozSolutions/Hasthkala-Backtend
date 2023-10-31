@@ -100,7 +100,6 @@ exports.adminCreateProductCtrl = async (req, res, imageUrls) => {
                 material: req?.body?.material,
                 trending: req?.body?.trending,
                 images: productImages,
-
                 additionalinfo: req?.body?.additionalinfo,
                 discountprice,
                 tags: req?.body?.tags,

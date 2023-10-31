@@ -43,6 +43,8 @@ exports.checkCouponCtrl = async (req, res) => {
             }
         }
         if(!sent){
+            console.log('here');
+            console.log(coupon,'cpn');
             return res.status(200).json({
                 valid:true,
                 discount:coupon?.discount,

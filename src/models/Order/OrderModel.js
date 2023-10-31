@@ -34,6 +34,9 @@ const orderSchema = new mongoose.Schema({
     personalization:{
         type:Boolean,
     },
+    orderName:{
+        type:String,
+    },
 },
     {
         toJSON: {
