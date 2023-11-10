@@ -50,12 +50,15 @@ app.use(passport.session());
 //cors
 app.use(
 	cors({
-		// origin: ['https://admin.hhkgifts.com','https://hhkgifts.com'],
-        origin:'http://localhost:3000',
+		origin: ['https://admin.hhkgifts.com','https://hhkgifts.com'],
+        // origin:'http://localhost:3000',
 		methods: "GET,POST,PUT,DELETE",
 		credentials: true,
 	})
 );
+
+app.use(bodyParse());
+app.use(bodyParse.json({limit: '50mb', type: 'application/json'}));
 
 
 app.use("/api", userRoutes);

@@ -39,7 +39,8 @@ exports.createOrderCtrl = async (req, res) => {
                         uid: userCreated?._id,
                         orderName: req?.body?.orderName,
                         orderPrice: totalprice,
-                        message: "Your Order has been Created!"
+                        message: "Your Order has been Created!",
+                        type:"Order",
                     }).then(async (notificationCreated) => {
                         await sendEmail(req.body.email, "Order Successfully Placed!", `Thank You for shopping from HarshHasthkala.\n\nYour order with order id ###,\nwith items ${req?.body?.orderName}\nhas been placed successfully.\nIt will be dispatched soon.\nFor any query contact HarshHasthkala via email at harshhasthkala@gmail.com or via number +917987600654.`).then((emailSent) => {
                             console.log("EMail sent");
@@ -104,7 +105,8 @@ exports.createOrderCtrl = async (req, res) => {
                     uid,
                     orderName: req?.body?.orderName,
                     orderPrice: totalprice,
-                    message: "Your Order has been Created!"
+                    message: "Your Order has been Created!",
+                    type:"Order",
                 }).then(async (notificationCreated) => {
                     await sendEmail(req.body.email, "Order Successfully Placed!", `Thank You for shopping from HarshHasthkala.\n\nYour order with order id ###,\nwith items ${req?.body?.orderName}\nhas been placed successfully.\nIt will be dispatched soon.\nFor any query contact HarshHasthkala via email at harshhasthkala@gmail.com or via number +917987600654.`).then((emailSent) => {
                         console.log("EMail sent");
@@ -190,7 +192,8 @@ exports.createPersonalizedOrderCtrl = async (req, res, imageUrls, cartdata, uid)
                         uid: userCreated?._id,
                         orderName: req?.body?.orderName,
                         orderPrice: totalprice,
-                        message: "Your Order has been Created!"
+                        message: "Your Order has been Created!",
+                        type:"Order",
                     }).then(async (notificationCreated) => {
                         await sendEmail(req.body.email, "Order Successfully Placed!", `Thank You for shopping from HarshHasthkala.\n\nYour order with order id ###,\nwith items ${req?.body?.orderName}\nhas been placed successfully.\nIt will be dispatched soon.\nFor any query contact HarshHasthkala via email at harshhasthkala@gmail.com or via number +917987600654.`).then((emailSent) => {
                             console.log("EMail sent");
@@ -259,7 +262,8 @@ exports.createPersonalizedOrderCtrl = async (req, res, imageUrls, cartdata, uid)
                     uid: uid,
                     orderName: req?.body?.orderName,
                     orderPrice: totalprice,
-                    message: "Your Order has been Created!"
+                    message: "Your Order has been Created!",
+                    type:"Order",
                 }).then(async (notificationCreated) => {
                     await sendEmail(req.body.email, "Order Successfully Placed!",  `Thank You for shopping from HarshHasthkala.\n\nYour order with order id ###,\nwith items ${req?.body?.orderName}\nhas been placed successfully.\nIt will be dispatched soon.\nFor any query contact HarshHasthkala via email at harshhasthkala@gmail.com or via number +917987600654.`).then((emailSent) => {
                         console.log("EMail sent");

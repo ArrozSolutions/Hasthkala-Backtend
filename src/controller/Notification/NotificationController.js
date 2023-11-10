@@ -4,7 +4,7 @@ const Notifications = require("../../models/Notifications/Notifications");
 
 exports.addNotificationCtrl = async (req, res) => {
     try {
-        const { uid,message,orderdata } = req.body;
+        const { uid,message,orderdata} = req.body;
         Notifications.create({
             uid,
             message,

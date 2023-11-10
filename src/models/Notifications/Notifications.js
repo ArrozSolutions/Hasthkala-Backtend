@@ -4,7 +4,6 @@ const notificationsSchema = new mongoose.Schema({
     uid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
     },
     message:{
         type:String,
@@ -17,6 +16,10 @@ const notificationsSchema = new mongoose.Schema({
     },
     orderId:{
         type:String,
+    },
+    type:{
+        type:String,
+        required:true,
     },
 },
     {

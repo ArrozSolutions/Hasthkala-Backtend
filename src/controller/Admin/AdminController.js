@@ -5,6 +5,7 @@ const Order = require("../../models/Order/OrderModel");
 const User = require("../../models/User/UserModel");
 const Category = require("../../models/Category/CategoryModel");
 const sendEmail = require('../../utils/SendMail');
+const Notifications = require("../../models/Notifications/Notifications");
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -424,7 +425,7 @@ exports.adminAllCategoryCtrl = async (req, res) => {
             }).limit(10).sort({ createdAt: -1 }).populate('parentid').skip(10 * skip)
             return res.status(200).json({
                 category,
-                totalcategory:category.length,
+                totalcategory: category.length,
             })
         }
         else {
@@ -636,17 +637,42 @@ exports.adminUpdateCategoryCtrl = async (req, res, imageUrls) => {
 exports.contactUsMailCtrl = async (req, res) => {
     try {
         const { name, email, phone, message } = req.body;
-        var msg = `Hasthkala Contact-Us:\nName: ${name}\nEmail: ${email}\nMobile Number: ${phone}\nMessage: ${message}`
-        await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`, msg).then((emailSent) => {
-            return res.status(200).json({
-                message: "Message sent",
-                emailSent: true,
+        if (req.body.uid == 'null') {
+            var msg = `Hasthkala Contact-Us:\nName: ${name}\nEmail: ${email}\nMobile Number: ${phone}\nMessage: ${message}`
+            Notifications.create({
+                message: msg,
+                type: 'Contact',
+            }).then(async (notificationCreated) => {
+                await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`, msg).then((emailSent) => {
+                    return res.status(200).json({
+                        message: "Message sent",
+                        emailSent: true,
+                    })
+                })
+            }).catch((error) => {
+                return res.status(400).json({
+                    message: error
+                })
             })
-        }).catch((error) => {
-            return res.status(400).json({
-                message: error
+        } else {
+            Notifications.create({
+                uid: req.body.uid,
+                message: req.body.message,
+                type: 'Contact',
+            }).then(async (notificationCreated) => {
+                var msg = `Hasthkala Contact-Us:\nName: ${name}\nEmail: ${email}\nMobile Number: ${phone}\nMessage: ${message}`
+                await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`, msg).then((emailSent) => {
+                    return res.status(200).json({
+                        message: "Message sent",
+                        emailSent: true,
+                    })
+                })
+            }).catch((error) => {
+                return res.status(400).json({
+                    message: error
+                })
             })
-        })
+        }
     } catch (error) {
         return res.status(500).json({
             message: "Internal Server Error" + error
@@ -700,6 +726,21 @@ exports.updateAdminAvatarCtrl = async (req, res, imageUrls) => {
                 })
             })
         }
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Internal Server Error " + error,
+        })
+    }
+}
+
+exports.getAdminNotifications = async (req, res) => {
+    try {
+        const notifications = await Notifications.find({});
+        return res.status(200).json({
+            notifications,
+            totalnotifications:notifications.length,
+        })
     }
     catch (error) {
         return res.status(500).json({
