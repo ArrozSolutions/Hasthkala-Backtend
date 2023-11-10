@@ -642,6 +642,9 @@ exports.contactUsMailCtrl = async (req, res) => {
             Notifications.create({
                 message: msg,
                 type: 'Contact',
+                name:req?.body?.name,
+                email:req?.body?.email,
+                phone:req?.body?.phone,
             }).then(async (notificationCreated) => {
                 await sendEmail('brickgold62@gmail.com', `${name}: Contacted You!`, msg).then((emailSent) => {
                     return res.status(200).json({
@@ -745,6 +748,20 @@ exports.getAdminNotifications = async (req, res) => {
     catch (error) {
         return res.status(500).json({
             message: "Internal Server Error " + error,
+        })
+    }
+}
+
+exports.AdminDeleteNotificationCtrl = async (req, res) => {
+    try {
+        const { nid } = req.body;
+        await Notifications.findByIdAndDelete(nid)
+        return res.status(200).json({
+            message: "Notifications Deleted Successfully",
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error
         })
     }
 }

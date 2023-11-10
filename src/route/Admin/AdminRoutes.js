@@ -1,5 +1,5 @@
 const express = require("express");
-const { adminCreateProductCtrl, adminCreateCategoryCtrl,adminAllCategoryParentCtrl, adminUpdateProductCtrl, adminRecentOrderCtrl, adminAllCustomersCtrl, adminAllOrdersCtrl, adminAllProductsCtrl, adminAllCategoryCtrl, adminDeleteRecentOrderCtrl, adminDashboardCtrl, adminDeleteCustomerCtrl, adminDeleteProductCtrl, adminDeleteCategoryCtrl, adminUpdateCategoryCtrl, adminCreateHomeCategoryCtrl, adminDeleteHomeCategoryCtrl, adminGetHomeCategoryCtrl, contactUsMailCtrl, changeStatusCtrl, updateAdminCtrl, updateAdminAvatarCtrl, getAdminNotifications } = require("../../controller/Admin/AdminController");
+const { adminCreateProductCtrl, adminCreateCategoryCtrl,adminAllCategoryParentCtrl, adminUpdateProductCtrl, adminRecentOrderCtrl, adminAllCustomersCtrl, adminAllOrdersCtrl, adminAllProductsCtrl, adminAllCategoryCtrl, adminDeleteRecentOrderCtrl, adminDashboardCtrl, adminDeleteCustomerCtrl, adminDeleteProductCtrl, adminDeleteCategoryCtrl, adminUpdateCategoryCtrl, adminCreateHomeCategoryCtrl, adminDeleteHomeCategoryCtrl, adminGetHomeCategoryCtrl, contactUsMailCtrl, changeStatusCtrl, updateAdminCtrl, updateAdminAvatarCtrl, getAdminNotifications, AdminDeleteNotificationCtrl } = require("../../controller/Admin/AdminController");
 const router = express.Router();
 const { adminMobileNoVerificatiion, adminEmailVerification } = require("../../controller/User/UserController");
 const multer = require('multer');
@@ -215,6 +215,7 @@ router.post('/update-admin-avatar', upload.array('images'), (req, res) => {
 });
 
 router.get('/admin-notifications',getAdminNotifications);
+router.post('/admin-delete-notifications',AdminDeleteNotificationCtrl);
 
 
 module.exports = router; 

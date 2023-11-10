@@ -21,6 +21,15 @@ const notificationsSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
+    name:{
+        type:String,
+    },
+    phone:{
+        type:String,
+    },
+    email:{
+        type:String,
+    },
 },
     {
         toJSON: {
